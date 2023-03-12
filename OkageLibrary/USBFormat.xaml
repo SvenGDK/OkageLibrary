@@ -1,0 +1,19 @@
+﻿<Window x:Class="USBFormat"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OkageLibrary"
+        mc:Ignorable="d"
+        Title="USB exFAT Format Utility" Height="232" Width="595" Background="#FF3E3E3E" ResizeMode="CanMinimize">
+    <Grid>
+        <TextBlock Margin="20,19,0,0" TextWrapping="Wrap" Text="Select your USB drive :" VerticalAlignment="Top" FontSize="14" Foreground="White" HorizontalAlignment="Left" Width="550" Height="20"/>
+        <ComboBox x:Name="DriveListComboBox" HorizontalAlignment="Left" Margin="20,44,0,0" VerticalAlignment="Top" Width="335" Height="22"/>
+        <CheckBox x:Name="ConvertToMBRCheckBox" Content="Convert to MBR" HorizontalAlignment="Left" Margin="20,95,0,0" VerticalAlignment="Top" Foreground="White" FontSize="14" Width="550" Height="20"/>
+        <CheckBox x:Name="KeepDataCheckBox" Content="Keep Data when formating (requires same space on your main drive)" HorizontalAlignment="Left" Margin="20,120,0,0" VerticalAlignment="Top" Foreground="White" FontSize="14" Width="550" Height="20"/>
+        <TextBlock Margin="20,71,0,0" TextWrapping="Wrap" Text="Options :" VerticalAlignment="Top" FontSize="14" Foreground="White" HorizontalAlignment="Left" Width="550"/>
+        <Button x:Name="StartButton" Content="Start Format" HorizontalAlignment="Left" Margin="452,171,0,0" VerticalAlignment="Top" Width="118"/>
+        <TextBlock Margin="20,150,0,0" TextWrapping="Wrap" Text="Warning : All Data will be erased if 'Keep Data' is not selected !" VerticalAlignment="Top" Foreground="White" HorizontalAlignment="Left" Width="550" FontWeight="Bold" FontStyle="Italic"/>
+
+    </Grid>
+</Window>
