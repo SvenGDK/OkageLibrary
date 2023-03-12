@@ -36,9 +36,10 @@
 Canis Canem Edit | SLES-53561 | Loads | Crashes after loading the menu + 1 trophy
 Devil May Cry | SLES-50358 | Menu | Boots into menu -> Crash after language selection
 Metal Slug 3 | SLES-52599 | No | Crash after transfer
-Mortal Kombat Armageddon | SLES-54156 | No | Triggers a trophy and crashes
+Mortal Kombat Armageddon | SLES-54156 | No | Triggers a trophy after transfer then crashes
+Need for Speed Underground | SLES-51967 | Menu | Menu works but crashes when starting a race, triggers 2 trophies 
 Resident Evil 4 | SLES-53702 | Yes | Boots into game and triggers 3 trophies + some graphical glitches
-Scarface | SLES-54182 | |
+Scarface | SLES-54182 | Yes | Boots into the game - stuttering in cut-scenes + some graphical glitches
 The Simpsons Hit & Run | SLES-51897 | No | Crash after transfer
 
 ## How-to repack an emulator ISO file
