@@ -9,7 +9,7 @@
 - Send Games to the mast1c0re Network Game Loader
 - PS2 Backup Manager
   - Shows game details and art from https://psxdatacenter.com/ if the game ID is supported
-- Emulator ISO Repacker
+- Emulator ISO Repacker (Currently unstable and might not work)
   - Allows re-packing RetroArch Emulator ISOs
 - exFAT MBR USB Format Tool
   - Can backup data before the format process
