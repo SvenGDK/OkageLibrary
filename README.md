@@ -2,14 +2,14 @@
 | ------------- | ------------- |
 | <img width="128" alt="Logo" src="https://user-images.githubusercontent.com/84620/224557684-ad2cf053-123f-4244-9df9-3bed55c5214c.png"> | Windows tool to manage and send your compatible mast1c0re ELFs &amp; ISOs at one place. |
 
-## Features of v1
+## Features of v1.1
 - Store all your ELF files and PS2 ISO games at one place
   - To use with mast1c0re compatible ELF files
 - Send ELFs to the mast1c0re Network ELF Loader
 - Send Games to the mast1c0re Network Game Loader
 - PS2 Backup Manager
   - Shows game details and art from https://psxdatacenter.com/ if the game ID is supported
-- Emulator ISO Repacker (Currently broken - the new ISO might not work)
+- Emulator ISO Repacker
   - Allows re-packing RetroArch Emulator ISOs
 - exFAT MBR USB Format Tool
   - Can backup data before the format process
@@ -42,6 +42,7 @@ Max Payne 2 | <img src='https://user-images.githubusercontent.com/84620/22466563
 Metal Slug 3 | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-52599 | :red_square: No | Crash after transfer
 Midnight Club 3 DUB Edition | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-52942 | :green_square: Yes | Playable with minimal glitches
 Mortal Kombat Armageddon | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-54156 | :red_square: No | Triggers a trophy after transfer then crashes
+Need for Speed Carbon Collectors Edition | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-54402 | :yellow_square: Loads | Game freezes after intro (no crash)
 Need for Speed Underground | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-51967 | :yellow_square: Menu | Menu works but crashes when starting a race, triggers 2 trophies 
 Resident Evil 4 | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-53702 | :green_square: Yes | Boots into game and triggers 3 trophies + some graphical glitches
 Scarface | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-54182 | :green_square: Yes | Boots into the game - stuttering in cut-scenes + some graphical glitches
@@ -50,6 +51,7 @@ Worms 4: Mayhem | <img src='https://user-images.githubusercontent.com/84620/2246
 
 
 ## How-to repack an emulator ISO file
+- Get the "LICENSEA.DAT" file (You can find by looking for the "Psy-Q SDK") and copy it to "\Tools\LIC"
 - Open the "Emulator ISO Repacker" tool
 - Select a compatible RetroArch Emulator ISO like "PicoDrive_PS2_Megadrive.iso"
 - INFO: The list will fill up if some roms have already been added
