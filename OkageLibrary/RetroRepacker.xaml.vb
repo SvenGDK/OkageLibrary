@@ -7,18 +7,15 @@ Imports DiscUtils.Iso9660
 Public Class RetroRepacker
 
     Dim ExtractedISOFolder As String
+
     Dim CoreInISO As String
-    Dim CurrentVolumeLabel As String
-    Dim CurrentISOVariant As Iso9660Variant = Iso9660Variant.Iso9660
+    Dim CoreFileName As String
+    Dim InfoFileName As String
 
     Public Sub OpenISOFile(ISOFile As String)
         Using isoStream As FileStream = File.OpenRead(ISOFile)
 
             Dim cd As New CDReader(isoStream, True)
-
-            'Set ISO properties
-            CurrentVolumeLabel = cd.VolumeLabel
-            CurrentISOVariant = cd.ActiveVariant
 
             'Check which emulator ISO has been selected so we can filter file extensions when adding roms
             Dim CoresInISO As String() = cd.GetFiles("CORES\") 'Gets actually ALL cores, but in this case there's only 1 in the ISO file
@@ -27,24 +24,44 @@ Public Class RetroRepacker
 
                 If CoresInISO(0).Contains("PICODRIVE_LIBRETRO_PS2.ELF") Then
                     CoreInISO = "PicoDrive"
+                    CoreFileName = "PICODRIVE_LIBRETRO_PS2.ELF"
+                    InfoFileName = "PICODRIVE_LIBRETRO.INFO"
                 ElseIf CoresInISO(0).Contains("QUICKNES_LIBRETRO_PS2.ELF") Then
                     CoreInISO = "QuickNES"
+                    CoreFileName = "QUICKNES_LIBRETRO_PS2.ELF"
+                    InfoFileName = "QUICKNES_LIBRETRO.INFO"
                 ElseIf CoresInISO(0).Contains("ATARI800_LIBRETRO_PS2.ELF") Then
                     CoreInISO = "Atari800"
+                    CoreFileName = "ATARI800_LIBRETRO_PS2.ELF"
+                    InfoFileName = "ATARI800_LIBRETRO.INFO"
                 ElseIf CoresInISO(0).Contains("PRBOOM_LIBRETRO_PS2.ELF") Then
                     CoreInISO = "Doom"
+                    CoreFileName = "PRBOOM_LIBRETRO_PS2.ELF"
+                    InfoFileName = "PRBOOM_LIBRETRO.INFO"
                 ElseIf CoresInISO(0).Contains("GAMBATTE_LIBRETRO_PS2.ELF") Then
                     CoreInISO = "Gambatte"
+                    CoreFileName = "GAMBATTE_LIBRETRO_PS2.ELF"
+                    InfoFileName = "GAMBATTE_LIBRETRO.INFO"
                 ElseIf CoresInISO(0).Contains("HANDY_LIBRETRO_PS2.ELF") Then
                     CoreInISO = "Lynx"
+                    CoreFileName = "HANDY_LIBRETRO_PS2.ELF"
+                    InfoFileName = "HANDY_LIBRETRO.INFO"
                 ElseIf CoresInISO(0).Contains("MEDNAFEN_WSWAN_LIBRETRO_PS.ELF") Then
                     CoreInISO = "MednafenWsan"
+                    CoreFileName = "MEDNAFEN_WSWAN_LIBRETRO_PS.ELF"
+                    InfoFileName = "MEDNAFEN_WSWAN_LIBRETRO.INFO"
                 ElseIf CoresInISO(0).Contains("RACE_LIBRETRO_PS2.ELF") Then
                     CoreInISO = "NeoGeoPocket"
+                    CoreFileName = "RACE_LIBRETRO_PS2.ELF"
+                    InfoFileName = "RACE_LIBRETRO.INFO"
                 ElseIf CoresInISO(0).Contains("SMSPLUS_LIBRETRO_PS2.ELF") Then
                     CoreInISO = "SMSPlus"
+                    CoreFileName = "SMSPLUS_LIBRETRO_PS2.ELF"
+                    InfoFileName = "SMSPLUS_LIBRETRO.INFO"
                 ElseIf CoresInISO(0).Contains("SNES9X2002_LIBRETRO_PS2.ELF") Then
                     CoreInISO = "Snes9x"
+                    CoreFileName = "SNES9X2002_LIBRETRO_PS2.ELF"
+                    InfoFileName = "SNES9X2002_LIBRETRO.INFO"
                 Else
                     CoreInISO = "Unknown"
                 End If
@@ -83,43 +100,62 @@ Public Class RetroRepacker
     End Sub
 
     Public Sub RecreateISOFile(ISOOutputPath As String)
-        Dim ISOBuilder As New CDBuilder With {.UseJoliet = False, .VolumeIdentifier = CurrentVolumeLabel}
-        Dim DirInfo As New DirectoryInfo(My.Computer.FileSystem.CurrentDirectory + "\Temp\" + ExtractedISOFolder)
 
-        'Create the ISO file
-        PopulateFromFolder(ISOBuilder, DirInfo, DirInfo.FullName)
-        ISOBuilder.Build(ISOOutputPath)
+        'First create the XML template
+        If MakeNewXML(My.Computer.FileSystem.CurrentDirectory + "\Temp\" + ExtractedISOFolder, ISOOutputPath) = 1 Then
 
-        If MsgBox("ISO successfully written at " + ISOOutputPath + vbCrLf + "Add to the game library ?", MsgBoxStyle.YesNo, "ISO re-created") = MsgBoxResult.Yes Then
+            Dim ProcessOutput As String = ""
+            Using MakeISOProcess As New Process()
+                MakeISOProcess.StartInfo.FileName = My.Computer.FileSystem.CurrentDirectory + "\Tools\mkpsxiso.exe"
+                MakeISOProcess.StartInfo.Arguments = "-y """ + My.Computer.FileSystem.CurrentDirectory + "\Tools\ISO.xml"""
+                MakeISOProcess.StartInfo.RedirectStandardOutput = True
+                MakeISOProcess.StartInfo.UseShellExecute = False
+                MakeISOProcess.StartInfo.CreateNoWindow = True
 
-            'Find the PS2 Backup Manager (if open) and add to the GamesListView
-            Dim GameItem As New GameListViewItem() With {.GameTitle = CoreInISO, .GameID = "SLUS-20090", .GameRegion = "International", .GameFilePath = ISOOutputPath}
-            For Each Win In Windows.Application.Current.Windows()
-                If Win.ToString = "OkageLibrary.PS2BackupManager" Then
-                    CType(Win, PS2BackupManager).GamesListView.Items.Add(GameItem)
-                    Exit For
-                End If
-            Next
+                MakeISOProcess.Start()
 
-            If Not File.Exists(My.Computer.FileSystem.CurrentDirectory + "\games.list") Then
-                File.Create(My.Computer.FileSystem.CurrentDirectory + "\games.list")
-            End If
+                Dim ShellReader As StreamReader = MakeISOProcess.StandardOutput
+                ProcessOutput = ShellReader.ReadToEnd()
 
-            'Add new line to games.list
-            Using GamesFileWriter As New StreamWriter(My.Computer.FileSystem.CurrentDirectory + "\games.list", True)
-                GamesFileWriter.WriteLine(CoreInISO + ";SLUS-20090;International;" + ISOOutputPath)
-                GamesFileWriter.Close()
+                ShellReader.Close()
             End Using
 
-            'Clear the RomsListView
-            AvailableRomsListView.Items.Clear()
+            If ProcessOutput.Contains("ISO image generated successfully.") Then
+                If MsgBox("ISO successfully written at " + ISOOutputPath + vbCrLf + "Add to the game library ?", MsgBoxStyle.YesNo, "ISO re-created") = MsgBoxResult.Yes Then
+
+                    'Find the PS2 Backup Manager (if open) and add to the GamesListView
+                    Dim GameItem As New GameListViewItem() With {.GameTitle = CoreInISO, .GameID = "SLUS-20090", .GameRegion = "International", .GameFilePath = ISOOutputPath}
+                    For Each Win In Windows.Application.Current.Windows()
+                        If Win.ToString = "OkageLibrary.PS2BackupManager" Then
+                            CType(Win, PS2BackupManager).GamesListView.Items.Add(GameItem)
+                            Exit For
+                        End If
+                    Next
+
+                    If Not File.Exists(My.Computer.FileSystem.CurrentDirectory + "\games.list") Then
+                        File.Create(My.Computer.FileSystem.CurrentDirectory + "\games.list")
+                    End If
+
+                    'Add new line to games.list
+                    Using GamesFileWriter As New StreamWriter(My.Computer.FileSystem.CurrentDirectory + "\games.list", True)
+                        GamesFileWriter.WriteLine(CoreInISO + ";SLUS-20090;International;" + ISOOutputPath)
+                        GamesFileWriter.Close()
+                    End Using
+
+                    'Clear the RomsListView
+                    AvailableRomsListView.Items.Clear()
+
+                End If
+            Else
+                MsgBox("Could not write the ISO file.", MsgBoxStyle.Exclamation, "Error creating ISO file")
+            End If
 
         End If
 
     End Sub
 
     Private Sub BrowseISOButton_Click(sender As Object, e As RoutedEventArgs) Handles BrowseISOButton.Click
-        Dim OFD As New OpenFileDialog() With {.Title = "Choose your emulator .iso file", .Multiselect = False}
+        Dim OFD As New OpenFileDialog() With {.Title = "Choose your emulator .iso file", .Multiselect = False, .Filter = "ISO files (*.iso)|*.iso"}
 
         If OFD.ShowDialog() = Forms.DialogResult.OK Then
             SelectedISOTextBox.Text = OFD.FileName
@@ -133,21 +169,6 @@ Public Class RetroRepacker
             ExtractISOFile(OFD.FileName)
         End If
 
-    End Sub
-
-    'From https://stackoverflow.com/a/30878297
-    Private Shared Sub PopulateFromFolder(builder As CDBuilder, di As DirectoryInfo, basePath As String)
-        For Each file As FileInfo In di.GetFiles()
-            If Not (file.Attributes And FileAttributes.Hidden) = FileAttributes.Hidden Then
-                builder.AddFile(file.FullName.Substring(basePath.Length), file.FullName)
-            End If
-        Next
-
-        For Each dir As DirectoryInfo In di.GetDirectories()
-            If Not (dir.Attributes And FileAttributes.Hidden) = FileAttributes.Hidden Then
-                PopulateFromFolder(builder, dir, basePath)
-            End If
-        Next
     End Sub
 
     Private Sub AddNewRomButton_Click(sender As Object, e As RoutedEventArgs) Handles AddNewRomButton.Click
@@ -189,7 +210,7 @@ Public Class RetroRepacker
 
                 'Copy the rom to the temporarly extracted ISO folder
                 Dim RomFileName As String = Path.GetFileName(SelectedRom)
-                File.Copy(SelectedRom, My.Computer.FileSystem.CurrentDirectory + "\Temp\" + ExtractedISOFolder + "\RETROARCH\DOWNLOADS\" + RomFileName)
+                File.Copy(SelectedRom, My.Computer.FileSystem.CurrentDirectory + "\Temp\" + ExtractedISOFolder + "\RETROARCH\DOWNLOADS\" + RomFileName, True)
             Next
 
         End If
@@ -254,16 +275,87 @@ Public Class RetroRepacker
             MsgBox("Please select a rom from the list.", MsgBoxStyle.Exclamation, "Could delete the selected rom file")
         End If
 
-
-
     End Sub
 
     Private Sub RetroRepacker_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
 
+        'Currently only deletes the current ISO - will be changed
         If Directory.Exists(My.Computer.FileSystem.CurrentDirectory + "\Temp\" + ExtractedISOFolder) Then
             Directory.Delete(My.Computer.FileSystem.CurrentDirectory + "\Temp\" + ExtractedISOFolder, True)
         End If
 
     End Sub
+
+    Private Function MakeNewXML(ExtractedISOPath As String, ISOOutput As String) As Integer
+        Try
+
+            'Remove the previous XML
+            If File.Exists(My.Computer.FileSystem.CurrentDirectory + "\Tools\ISO.xml") Then
+                File.Delete(My.Computer.FileSystem.CurrentDirectory + "\Tools\ISO.xml")
+            End If
+
+            Dim LicensePath As String = My.Computer.FileSystem.CurrentDirectory + "\Tools\LIC\LICENSEA.DAT"
+            Dim RetroArchCFGPath As String = ExtractedISOPath + "\RETROARCH.CFG"
+            Dim GameIDFilePath As String = ExtractedISOPath + "\SLUS_200.90"
+            Dim SYSTEMCNFPath As String = ExtractedISOPath + "\SYSTEM.CNF"
+            Dim CoreFolderPath As String = ExtractedISOPath + "\CORES\"
+            Dim InfoFolderPath As String = ExtractedISOPath + "\INFO\"
+            Dim RetroArchFolderPath As String = ExtractedISOPath + "\RETROARCH\"
+
+            'Create the ISO.xml
+            Dim ISOXMLDocument As XDocument = <?xml version="1.0" encoding="UTF-8"?>
+                                              <iso_project image_name=<%= ISOOutput %> no_xa="1">
+                                                  <track type="data">
+                                                      <identifiers
+                                                          system="PLAYSTATION"
+                                                          application="PLAYSTATION"
+                                                          volume=<%= CoreInISO %>
+                                                          volume_set=<%= CoreInISO %>
+                                                          publisher="SvenGDK"
+                                                          data_preparer="MKPSXISO"
+                                                          copyright="RETROARCH"
+                                                      />
+                                                      <license file=<%= LicensePath %>/>
+                                                      <directory_tree>
+
+                                                          <file name="SLUS_200.90" type="data" source=<%= GameIDFilePath %>/>
+                                                          <file name="SYSTEM.CNF" type="data" source=<%= SYSTEMCNFPath %>/>
+
+                                                          <dir name="CORES" source=<%= CoreFolderPath %>>
+                                                              <file name=<%= CoreFileName %> type="data" source=<%= CoreFolderPath + CoreFileName %>/>
+                                                          </dir>
+
+                                                          <dir name="INFO" source=<%= InfoFolderPath %>>
+                                                              <file name=<%= InfoFileName %> type="data" source=<%= InfoFolderPath + InfoFileName %>/>
+                                                          </dir>
+
+                                                          <dir name="RETROARCH" source=<%= RetroArchFolderPath %>>
+                                                              <dir name="DOWNLOADS" source=<%= RetroArchFolderPath + "DOWNLOADS\" %>>
+
+                                                              </dir>
+                                                          </dir>
+                                                      </directory_tree>
+                                                  </track>
+                                              </iso_project>
+
+            'Add RETROARCH.CFG if it existed on the ISO
+            If File.Exists(RetroArchCFGPath) Then
+                ISOXMLDocument.Root.Element("track").Element("directory_tree").Add(<file name="RETROARCH.CFG" type="data" source=<%= RetroArchCFGPath %>/>)
+            End If
+
+            'Add roms to the XML
+            For Each GameRom In Directory.GetFiles(ExtractedISOPath + "\RETROARCH\DOWNLOADS\")
+                Dim GameFileName As String = Path.GetFileName(GameRom)
+                ISOXMLDocument.Root.Element("track").Element("directory_tree").Elements("dir")(2).Element("dir").Add(<file name=<%= GameFileName %> type="data" source=<%= GameRom %>/>)
+            Next
+
+            'Save the XML file
+            ISOXMLDocument.Save(My.Computer.FileSystem.CurrentDirectory + "\Tools\ISO.xml")
+
+            Return 1
+        Catch ex As Exception
+            Return 0
+        End Try
+    End Function
 
 End Class

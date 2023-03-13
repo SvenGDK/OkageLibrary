@@ -35,7 +35,7 @@
         <Button x:Name="AddNewGameButton" Content="Add a new game" HorizontalAlignment="Left" Margin="10,578,0,0" VerticalAlignment="Top" Width="175" Height="25"/>
         <Button x:Name="SendGameButton" Content="Send selected game to console" HorizontalAlignment="Left" Margin="535,578,0,0" VerticalAlignment="Top" Width="175" Height="25"/>
         <Button x:Name="RemoveSelectedGameButton" Content="Remove selected game" HorizontalAlignment="Left" Margin="190,578,0,0" VerticalAlignment="Top" Width="175" Height="25"/>
-        <ProgressBar x:Name="SendProgressBar" HorizontalAlignment="Left" Height="20" Margin="278,332,0,0" VerticalAlignment="Top" Width="800" Visibility="Hidden"/>
+        <ProgressBar x:Name="SendProgressBar" HorizontalAlignment="Left" Height="20" Margin="278,332,0,0" VerticalAlignment="Top" Width="800" Visibility="Hidden" Foreground="#FF00A4E3"/>
         <TextBlock x:Name="SendStatusTextBlock" HorizontalAlignment="Left" Margin="278,0,0,0" TextWrapping="Wrap" Text="Status :" VerticalAlignment="Center" Width="800" Height="20" Foreground="White" FontSize="14" Visibility="Hidden"/>
 
     </Grid>
