@@ -1,6 +1,6 @@
 | | |
 | ------------- | ------------- |
-| <img width="128" alt="Logo" src="https://user-images.githubusercontent.com/84620/224557684-ad2cf053-123f-4244-9df9-3bed55c5214c.png"> | Windows tool to manage and send your compatible mast1c0re ELFs &amp; ISOs at one place. |
+| <img width="128" alt="Logo" src="https://user-images.githubusercontent.com/84620/224557684-ad2cf053-123f-4244-9df9-3bed55c5214c.png"> | Windows tool to manage & send compatible mast1c0re ELFs & ISOs. </br> Includes a RetroArch PS2 ISO Repacker and a Format to exFAT MBR Tool. |
 
 ## Features of v1.1
 - Store all your ELF files and PS2 ISO games at one place
