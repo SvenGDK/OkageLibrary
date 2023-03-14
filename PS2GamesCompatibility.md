@@ -1,9 +1,11 @@
 ## Tested PS2 games with the "Network Game Loader v0.1.4"
 | Game Title | Game ID | Works ? | Comments |
 | ------------- | ------------- | ------------- | ------------- |
+Black | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-53886 | :red_square: No | Crash after transfer
 Burnout 3 - Take down | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-52585 | :yellow_square: Menu | Freezes after selecting the first race
 Burnout Revenge | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-53507 | :yellow_square: Menu | Crashes after starting the first race
 Canis Canem Edit | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-53561 | :yellow_square: Menu | Crashes after loading the menu + 1 trophy
+Capcom vs. SNK 2 - Mark of the Millennium | <img src='https://user-images.githubusercontent.com/84620/224665633-5499d0ca-8d37-4bd4-b044-932f9f4f23f1.png' width='21' height='15'> SLUS-20246 | :red_square: No | Black screen then crashes
 Crash Team Racing | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-53439 | :yellow_square: Menu | Crashes after starting the campaign
 Crash Twinsanity | <img src='https://user-images.githubusercontent.com/84620/224665633-5499d0ca-8d37-4bd4-b044-932f9f4f23f1.png' width='21' height='15'> SLUS-20909 | :green_square: Yes | Playable with minimal glitches
 Def Jam - Fight for NY | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-52507 | :red_square: No | Crash after transfer
@@ -53,6 +55,7 @@ Ratchet & Clank 3 | <img src='https://user-images.githubusercontent.com/84620/22
 Resident Evil 4 | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-53702 | :green_square: Yes | Boots into game and triggers 3 trophies + some graphical glitches
 Scarface | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-54182 | :green_square: Yes | Boots into the game - stuttering in cut-scenes + some graphical glitches
 Shadow of the Colossus | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SCES-53326 | :red_square: No | Crashes after transfer
+Shadow the Hedgehog | <img src='https://user-images.githubusercontent.com/84620/224665633-5499d0ca-8d37-4bd4-b044-932f9f4f23f1.png' width='21' height='15'> SLUS-21261 | :green_square: Yes | Playable with very minimal glitches
 Silent Hill 2 - Dir. Cut | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-51156 | :green_square: Yes | Playable with some graphical glitches
 Silent Hill 3 | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-51434 | :red_square: No | Crash after transfer
 Silent Hill 4 - The Room | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-52445 | :red_square: No | Crashes after transfer

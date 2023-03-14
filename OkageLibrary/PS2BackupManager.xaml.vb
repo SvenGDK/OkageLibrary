@@ -3,7 +3,6 @@ Imports System.IO
 Imports System.Net
 Imports System.Net.Sockets
 Imports System.Windows.Forms
-Imports OkageLibrary.MainWindow
 
 Public Class PS2BackupManager
 
@@ -13,7 +12,9 @@ Public Class PS2BackupManager
     Dim AddToList As Boolean = False
     Dim SelectedISO As String
     Dim TotalBytes As Long
+
     Public ConsoleIP As String
+    Public UseModELF As Boolean = False
     Private ReadOnly Magic As UInteger = &HEA6E
 
     Private Sub PS2BackupManager_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
@@ -145,7 +146,7 @@ Public Class PS2BackupManager
 
             If GameID = "ID not found" Then
                 'Add to the GamesListView
-                Dim GameItem As New GameListViewItem() With {.GameTitle = "Unknown", .GameID = "Unknown", .GameRegion = "Unknown", .GameFilePath = OFD.FileName}
+                Dim GameItem As New GameListViewItem() With {.GameTitle = "Not found", .GameID = GameID, .GameRegion = "Unknown", .GameFilePath = OFD.FileName}
                 GamesListView.Items.Add(GameItem)
 
                 If Not File.Exists(My.Computer.FileSystem.CurrentDirectory + "\games.list") Then
@@ -273,62 +274,12 @@ Public Class PS2BackupManager
                 TotalBytes = GameFileInfo.Length
 
                 'Start sending
-                SenderWorker.RunWorkerAsync(New WorkerArgs() With {.DeviceIP = DeviceIP, .FileToSend = SelectedGame.GameFilePath})
+                Dim WorkArgs As New MainWindow.WorkerArgs() With {.DeviceIP = DeviceIP, .FileToSend = SelectedGame.GameFilePath}
+                If UseModELF = True Then WorkArgs.ChunkSize = 63488 Else WorkArgs.ChunkSize = 4096
+                SenderWorker.RunWorkerAsync(WorkArgs)
             End If
 
         End If
-
-    End Sub
-
-    Public Sub SendNewFile(DeviceIP As IPAddress, FileToSend As String)
-
-        Dim FileInfos As New FileInfo(FileToSend)
-        Dim FileSizeAsLong As Long = FileInfos.Length
-        Dim FileSizeAsULong As ULong = CULng(FileInfos.Length)
-
-        Dim MagicBytes = BytesConverter.ToLittleEndian(Magic)
-        Dim NewFileSizeBytes = BytesConverter.ToLittleEndian(FileSizeAsULong)
-
-        Using SenderSocket As New Socket(SocketType.Stream, ProtocolType.Tcp) With {.ReceiveTimeout = 3000}
-
-            SenderSocket.Connect(DeviceIP, 9045)
-
-            SenderSocket.Send(MagicBytes)
-            SenderSocket.Send(NewFileSizeBytes)
-
-            Dim BytesRead As Integer
-            Dim Buffer(4096 - 1) As Byte
-
-            'Open the file and send chunks of 4096
-            Using SenderFileStream As New FileStream(FileToSend, FileMode.Open, FileAccess.Read)
-
-                Do
-                    BytesRead = SenderFileStream.Read(Buffer, 0, Buffer.Length)
-
-                    If BytesRead > 0 Then
-                        'Send
-                        SenderSocket.Send(Buffer, 0, BytesRead, SocketFlags.None)
-
-                        If SendStatusTextBlock.Dispatcher.CheckAccess() = False Then
-                            SendStatusTextBlock.Dispatcher.BeginInvoke(Sub() SendStatusTextBlock.Text = "Sending file:  bytes sent.")
-                        Else
-
-                        End If
-
-                        If SendProgressBar.Dispatcher.CheckAccess() = False Then
-                            'SendProgressBar.Dispatcher.BeginInvoke(Sub() SendProgressBar.Value += BytesRead)
-                        Else
-                            'SendProgressBar.Value += BytesRead
-                        End If
-
-                    End If
-                Loop While BytesRead > 0
-
-            End Using
-
-            SenderSocket.Close()
-
-        End Using
 
     End Sub
 
@@ -347,7 +298,7 @@ Public Class PS2BackupManager
 
     Private Sub SenderWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles SenderWorker.DoWork
 
-        Dim CurrentWorkerArgs As WorkerArgs = CType(e.Argument, WorkerArgs)
+        Dim CurrentWorkerArgs As MainWindow.WorkerArgs = CType(e.Argument, MainWindow.WorkerArgs)
 
         Dim FileInfos As New FileInfo(CurrentWorkerArgs.FileToSend)
         Dim FileSizeAsLong As Long = FileInfos.Length
@@ -355,19 +306,23 @@ Public Class PS2BackupManager
 
         Dim MagicBytes = BytesConverter.ToLittleEndian(Magic)
         Dim NewFileSizeBytes = BytesConverter.ToLittleEndian(FileSizeAsULong)
+        Dim ChunkSize As Integer = CurrentWorkerArgs.ChunkSize
 
         Using SenderSocket As New Socket(SocketType.Stream, ProtocolType.Tcp) With {.ReceiveTimeout = 3000}
 
+            'Connect to the console
             SenderSocket.Connect(CurrentWorkerArgs.DeviceIP, 9045)
 
+            'Send the magic
             SenderSocket.Send(MagicBytes)
+            'Send the file size
             SenderSocket.Send(NewFileSizeBytes)
 
             Dim BytesRead As Integer
             Dim SendBytes As Long
-            Dim Buffer(4096 - 1) As Byte
+            Dim Buffer(ChunkSize - 1) As Byte
 
-            'Open the file and send chunks of 4096
+            'Open the file and send
             Using SenderFileStream As New FileStream(CurrentWorkerArgs.FileToSend, FileMode.Open, FileAccess.Read)
 
                 Do
@@ -379,16 +334,16 @@ Public Class PS2BackupManager
 
                         'Update the status text
                         If SendStatusTextBlock.Dispatcher.CheckAccess() = False Then
-                            SendStatusTextBlock.Dispatcher.BeginInvoke(Sub() SendStatusTextBlock.Text = "Sending file: " + SendBytes.ToString + " bytes of " + TotalBytes.ToString + " bytes sent.")
+                            SendStatusTextBlock.Dispatcher.BeginInvoke(Sub() SendStatusTextBlock.Text = "Sending file: " + GetReadableSizeString(SendBytes) + " of " + GetReadableSizeString(TotalBytes) + " sent.")
                         Else
-                            SendStatusTextBlock.Text = "Sending file: " + SendBytes.ToString + " of " + TotalBytes.ToString + " sent."
+                            SendStatusTextBlock.Text = "Sending file: " + GetReadableSizeString(SendBytes) + " of " + GetReadableSizeString(TotalBytes) + " sent."
                         End If
 
                         'Update the status progress bar
                         If SendProgressBar.Dispatcher.CheckAccess() = False Then
-                            SendProgressBar.Dispatcher.BeginInvoke(Sub() SendProgressBar.Value += 4096)
+                            SendProgressBar.Dispatcher.BeginInvoke(Sub() SendProgressBar.Value += ChunkSize)
                         Else
-                            SendProgressBar.Value += 4096
+                            SendProgressBar.Value += ChunkSize
                         End If
 
                     End If
@@ -429,6 +384,13 @@ Public Class PS2BackupManager
         If Not e.Cancelled Then
             MsgBox("Game successfully sent!" + vbCrLf + "Please report the game compatibility.", MsgBoxStyle.Information, "Success")
         End If
+
     End Sub
+
+    Public Function GetReadableSizeString(Value As Long) As String
+        Dim DoubleBytes As Double
+        DoubleBytes = CDbl(Value / 1048576)
+        Return FormatNumber(DoubleBytes, 2) & " MB"
+    End Function
 
 End Class

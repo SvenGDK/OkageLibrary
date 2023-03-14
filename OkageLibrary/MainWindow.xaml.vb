@@ -7,12 +7,15 @@ Imports System.Windows.Forms
 Class MainWindow
 
     Private ReadOnly Magic As UInteger = &HEA6E
+
     Dim TotalBytes As Integer
+    Dim UseMod As Boolean = False
     Dim WithEvents SenderWorker As New BackgroundWorker() With {.WorkerReportsProgress = True}
 
     Public Structure WorkerArgs
         Private _DeviceIP As IPAddress
         Private _FileToSend As String
+        Private _ChunkSize As Integer
 
         Public Property DeviceIP As IPAddress
             Get
@@ -29,6 +32,15 @@ Class MainWindow
             End Get
             Set
                 _FileToSend = Value
+            End Set
+        End Property
+
+        Public Property ChunkSize As Integer
+            Get
+                Return _ChunkSize
+            End Get
+            Set
+                _ChunkSize = Value
             End Set
         End Property
     End Structure
@@ -137,6 +149,7 @@ Class MainWindow
 
     Private Sub PS2BackupManagerButton_Click(sender As Object, e As RoutedEventArgs) Handles PS2BackupManagerButton.Click
         Dim NewPS2BackupManager As New PS2BackupManager() With {.ShowActivated = True, .ConsoleIP = IPTextBox.Text}
+        If UseMod = True Then NewPS2BackupManager.UseModELF = True 'Tell the backup manager to use the modified network loader and send larger chunks
         NewPS2BackupManager.Show()
     End Sub
 
@@ -212,8 +225,19 @@ Class MainWindow
 
         If HomebrewListView.SelectedItem IsNot Nothing And Not String.IsNullOrWhiteSpace(IPTextBox.Text) Then
 
-            Dim DeviceIP As IPAddress = IPAddress.Parse(IPTextBox.Text)
+            Dim DeviceIP As IPAddress
+
+            Try
+                DeviceIP = IPAddress.Parse(IPTextBox.Text)
+            Catch ex As FormatException
+                MsgBox("Could not send selected ELF. Please check your IP.", MsgBoxStyle.Exclamation, "Error sending file")
+                Exit Sub
+            End Try
+
             Dim SelectedELF As HomebrewListViewItem = CType(HomebrewListView.SelectedItem, HomebrewListViewItem)
+
+            'Check if the modified network game loader has been sent
+            If SelectedELF.FileName.Contains("mod network game loader") Then UseMod = True Else UseMod = False
 
             'Set the progress bar maximum and TotalBytes to send
             SendProgressBar.Value = 0
