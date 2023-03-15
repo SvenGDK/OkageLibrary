@@ -75,7 +75,6 @@ Class MainWindow
         If OFD.ShowDialog() = Forms.DialogResult.OK Then
 
             Dim HomebrewFileName As String = Path.GetFileNameWithoutExtension(OFD.FileName)
-
             Dim HomebrewName As String = ""
             Dim HomebrewConsole As String = ""
             Dim HomebrewFirmware As String = ""
@@ -87,19 +86,15 @@ Class MainWindow
                 Dim HomebrewFileNameSplitArray As String() = HomebrewFileName.Split(New String() {"-PS4-"}, StringSplitOptions.None)
                 HomebrewName = HomebrewFileNameSplitArray(0).Replace("-"c, " ")
                 HomebrewFirmware = HomebrewFileNameSplitArray(1).Replace("-"c, ".")
-
-
             ElseIf OFD.FileName.Contains("PS5") Then
                 HomebrewConsole = "PS5"
 
                 Dim HomebrewFileNameSplitArray As String() = HomebrewFileName.Split(New String() {"-PS5-"}, StringSplitOptions.None)
                 HomebrewName = HomebrewFileNameSplitArray(0).Replace("-"c, " ")
                 HomebrewFirmware = HomebrewFileNameSplitArray(1).Replace("-"c, ".")
-
             Else
                 HomebrewConsole = "Unknown"
                 HomebrewFirmware = "Unknown"
-
             End If
 
             'Add to the HomebrewListView

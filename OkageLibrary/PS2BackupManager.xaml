@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="PS2 Backup Manager" Height="650" Width="1100" Background="#FF3E3E3E" ResizeMode="CanMinimize">
     <Grid>
-        <ListView x:Name="GamesListView" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,373,0,0" Height="200" Width="700" VerticalAlignment="Top" HorizontalAlignment="Left" >
+        <ListView x:Name="GamesListView" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,373,0,0" Height="200" Width="725" VerticalAlignment="Top" HorizontalAlignment="Left" >
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Title" DisplayMemberBinding="{Binding GameTitle}"/>
@@ -20,23 +20,24 @@
         <Image x:Name="GameCoverImage" Margin="10,8,0,266" Width="250" Height="360" HorizontalAlignment="Left"/>
         <TextBlock x:Name="GameTitleTextBlock" TextWrapping="Wrap" FontSize="20" Foreground="White" Margin="278,10,0,0" Height="27" Width="800" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         <TextBox x:Name="GameDescriptionTextBlock" TextWrapping="Wrap" Background="{x:Null}" BorderBrush="{x:Null}" Margin="278,42,0,0" Width="800" Foreground="White" VerticalAlignment="Top" Height="310" HorizontalAlignment="Left"/>
-        <TextBlock TextWrapping="Wrap" Text="Region :" FontSize="14" TextAlignment="Right" Margin="723,434,0,0" Width="100" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBlock TextWrapping="Wrap" Text="Genre :" FontSize="14" TextAlignment="Right" Margin="723,538,0,0" Width="100" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBlock TextWrapping="Wrap" Text="Developer :" FontSize="14" TextAlignment="Right" Margin="723,512,0,0" Width="100" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBlock TextWrapping="Wrap" Text="Publisher :" FontSize="14" TextAlignment="Right" Margin="723,486,0,0" Height="21" Foreground="White" HorizontalAlignment="Left" Width="100" VerticalAlignment="Top"/>
-        <TextBlock TextWrapping="Wrap" Text="Release Date :" FontSize="14" TextAlignment="Right" Margin="723,460,0,0" Width="100" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBlock TextWrapping="Wrap" Text="Game ID :" FontSize="14" TextAlignment="Right" Margin="723,408,0,0" Width="100" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBlock x:Name="GameIDTextBlock" TextWrapping="Wrap" Margin="828,408,0,0" FontSize="14" Width="250" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBlock x:Name="RegionTextBlock" TextWrapping="Wrap" Margin="828,434,0,0" FontSize="14" Width="250" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBlock x:Name="GenreTextBlock" TextWrapping="Wrap" Margin="828,538,0,0" FontSize="14" Height="21" Foreground="White" HorizontalAlignment="Left" Width="250" VerticalAlignment="Top"/>
-        <TextBlock x:Name="DeveloperTextBlock" TextWrapping="Wrap" Margin="828,512,0,0" FontSize="14" Width="250" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBlock x:Name="PublisherTextBlock" TextWrapping="Wrap" Margin="828,486,0,0" FontSize="14" Width="250" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <TextBlock x:Name="ReleaseDateTextBlock" TextWrapping="Wrap" Margin="828,460,0,0" FontSize="14" Width="250" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <Button x:Name="AddNewGameButton" Content="Add a new game" HorizontalAlignment="Left" Margin="10,578,0,0" VerticalAlignment="Top" Width="175" Height="25"/>
-        <Button x:Name="SendGameButton" Content="Send selected game to console" HorizontalAlignment="Left" Margin="535,578,0,0" VerticalAlignment="Top" Width="175" Height="25"/>
-        <Button x:Name="RemoveSelectedGameButton" Content="Remove selected game" HorizontalAlignment="Left" Margin="190,578,0,0" VerticalAlignment="Top" Width="175" Height="25"/>
+        <TextBlock TextWrapping="Wrap" Text="Region :" FontSize="14" TextAlignment="Right" Margin="740,434,0,0" Width="90" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock TextWrapping="Wrap" Text="Genre :" FontSize="14" TextAlignment="Right" Margin="740,538,0,0" Width="90" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock TextWrapping="Wrap" Text="Developer :" FontSize="14" TextAlignment="Right" Margin="740,512,0,0" Width="90" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock TextWrapping="Wrap" Text="Publisher :" FontSize="14" TextAlignment="Right" Margin="740,486,0,0" Height="21" Foreground="White" HorizontalAlignment="Left" Width="90" VerticalAlignment="Top"/>
+        <TextBlock TextWrapping="Wrap" Text="Release Date :" FontSize="14" TextAlignment="Right" Margin="740,460,0,0" Width="90" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock TextWrapping="Wrap" Text="Game ID :" FontSize="14" TextAlignment="Right" Margin="740,408,0,0" Width="90" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock x:Name="GameIDTextBlock" TextWrapping="Wrap" Margin="845,408,0,0" FontSize="14" Width="240" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock x:Name="RegionTextBlock" TextWrapping="Wrap" Margin="845,434,0,0" FontSize="14" Width="240" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock x:Name="GenreTextBlock" TextWrapping="Wrap" Margin="845,538,0,0" FontSize="14" Height="21" Foreground="White" HorizontalAlignment="Left" Width="240" VerticalAlignment="Top"/>
+        <TextBlock x:Name="DeveloperTextBlock" TextWrapping="Wrap" Margin="845,512,0,0" FontSize="14" Width="240" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock x:Name="PublisherTextBlock" TextWrapping="Wrap" Margin="845,486,0,0" FontSize="14" Width="240" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <TextBlock x:Name="ReleaseDateTextBlock" TextWrapping="Wrap" Margin="845,460,0,0" FontSize="14" Width="240" Height="21" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <Button x:Name="AddNewGameButton" Content="Add a new game" HorizontalAlignment="Left" Margin="10,578,0,0" VerticalAlignment="Top" Width="150" Height="25"/>
+        <Button x:Name="SendGameButton" Content="Send selected game to console" HorizontalAlignment="Left" Margin="450,578,0,0" VerticalAlignment="Top" Width="180" Height="25"/>
+        <Button x:Name="RemoveSelectedGameButton" Content="Remove selected game" HorizontalAlignment="Left" Margin="165,578,0,0" VerticalAlignment="Top" Width="150" Height="25"/>
         <ProgressBar x:Name="SendProgressBar" HorizontalAlignment="Left" Height="20" Margin="278,332,0,0" VerticalAlignment="Top" Width="800" Visibility="Hidden" Foreground="#FF00A4E3"/>
         <TextBlock x:Name="SendStatusTextBlock" HorizontalAlignment="Left" Margin="278,0,0,0" TextWrapping="Wrap" Text="Status :" VerticalAlignment="Center" Width="800" Height="20" Foreground="White" FontSize="14" Visibility="Hidden"/>
+        <Button x:Name="SendConfigButton" Content="Send config" HorizontalAlignment="Left" Margin="635,578,0,0" VerticalAlignment="Top" Width="100" Height="25" IsEnabled="False"/>
 
     </Grid>
 </Window>

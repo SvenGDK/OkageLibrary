@@ -7,7 +7,9 @@ Imports System.Windows.Forms
 Public Class PS2BackupManager
 
     Dim WithEvents PSXDatacenterBrowser As New WebBrowser()
+
     Dim WithEvents SenderWorker As New BackgroundWorker() With {.WorkerReportsProgress = True}
+    Dim WithEvents ConfigSenderWorker As New BackgroundWorker() With {.WorkerReportsProgress = True}
 
     Dim AddToList As Boolean = False
     Dim SelectedISO As String
@@ -18,10 +20,9 @@ Public Class PS2BackupManager
     Private ReadOnly Magic As UInteger = &HEA6E
 
     Private Sub PS2BackupManager_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
-
         If File.Exists(My.Computer.FileSystem.CurrentDirectory + "\games.list") Then
-
             For Each Game In File.ReadAllLines(My.Computer.FileSystem.CurrentDirectory + "\games.list")
+                On Error Resume Next 'Skip broken lines
 
                 If Not String.IsNullOrWhiteSpace(Game) Then
 
@@ -36,9 +37,7 @@ Public Class PS2BackupManager
                 End If
 
             Next
-
         End If
-
     End Sub
 
     Private Sub PSXDatacenterBrowser_DocumentCompleted(sender As Object, e As WebBrowserDocumentCompletedEventArgs) Handles PSXDatacenterBrowser.DocumentCompleted
@@ -382,7 +381,9 @@ Public Class PS2BackupManager
         End If
 
         If Not e.Cancelled Then
-            MsgBox("Game successfully sent!" + vbCrLf + "Please report the game compatibility.", MsgBoxStyle.Information, "Success")
+            'A config file can now be sent
+            SendConfigButton.IsEnabled = True
+            MsgBox("Game successfully sent!" + vbCrLf + "You can now send a config file if you want to." + vbCrLf + "Please report the game compatibility on GitHub.", MsgBoxStyle.Information, "Success")
         End If
 
     End Sub
@@ -392,5 +393,99 @@ Public Class PS2BackupManager
         DoubleBytes = CDbl(Value / 1048576)
         Return FormatNumber(DoubleBytes, 2) & " MB"
     End Function
+
+    Private Sub SendConfigButton_Click(sender As Object, e As RoutedEventArgs) Handles SendConfigButton.Click
+
+        'Open choose config dialog
+        Dim OFD As New OpenFileDialog() With {.Title = "Select an .conf file", .Filter = "Config files (*.conf)|*.conf"}
+        Dim DeviceIP As IPAddress = IPAddress.Parse(ConsoleIP)
+
+        If OFD.ShowDialog() = Forms.DialogResult.OK Then
+            'Show progress bar
+            GameDescriptionTextBlock.Height = 230
+            SendStatusTextBlock.Visibility = Visibility.Visible
+            SendProgressBar.Visibility = Visibility.Visible
+            SendGameButton.IsEnabled = False
+
+            Dim ConfigFileInfo As New FileInfo(OFD.FileName)
+            Dim FilePath As String = Path.GetFullPath(OFD.FileName)
+
+            MsgBox(FilePath)
+
+            'Set the progress bar maximum and TotalBytes to send
+            SendProgressBar.Value = 0
+            SendProgressBar.Maximum = CDbl(ConfigFileInfo.Length)
+            TotalBytes = ConfigFileInfo.Length
+
+            'Start sending
+            Dim WorkArgs As New MainWindow.WorkerArgs() With {.DeviceIP = DeviceIP, .FileToSend = FilePath}
+            ConfigSenderWorker.RunWorkerAsync(WorkArgs)
+        End If
+
+    End Sub
+
+    Private Sub ConfigSenderWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles ConfigSenderWorker.DoWork
+
+        Dim CurrentWorkerArgs As MainWindow.WorkerArgs = CType(e.Argument, MainWindow.WorkerArgs)
+
+        Dim FileInfos As New FileInfo(CurrentWorkerArgs.FileToSend)
+        Dim FileSizeAsLong As Long = FileInfos.Length
+        Dim FileSizeAsULong As ULong = CULng(FileInfos.Length)
+
+        Dim MagicBytes = BytesConverter.ToLittleEndian(Magic)
+        Dim NewFileSizeBytes = BytesConverter.ToLittleEndian(FileSizeAsULong)
+
+        Using SenderSocket As New Socket(SocketType.Stream, ProtocolType.Tcp) With {.ReceiveTimeout = 3000}
+
+            SenderSocket.Connect(CurrentWorkerArgs.DeviceIP, 9045)
+
+            SenderSocket.Send(MagicBytes)
+            SenderSocket.Send(NewFileSizeBytes)
+
+            Dim BytesRead As Integer
+            Dim SendBytes As Integer
+            Dim Buffer(10 - 1) As Byte
+
+            Using SenderFileStream As New FileStream(CurrentWorkerArgs.FileToSend, FileMode.Open, FileAccess.Read)
+
+                Do
+                    BytesRead = SenderFileStream.Read(Buffer, 0, Buffer.Length)
+
+                    If BytesRead > 0 Then
+                        SendBytes += SenderSocket.Send(Buffer, 0, BytesRead, SocketFlags.None)
+
+                        'Update the status text
+                        If SendStatusTextBlock.Dispatcher.CheckAccess() = False Then
+                            SendStatusTextBlock.Dispatcher.BeginInvoke(Sub() SendStatusTextBlock.Text = "Sending file: " + SendBytes.ToString + " bytes of " + TotalBytes.ToString + " bytes sent.")
+                        Else
+                            SendStatusTextBlock.Text = "Sending file: " + SendBytes.ToString + " of " + TotalBytes.ToString + " sent."
+                        End If
+
+                        'Update the status progress bar
+                        If SendProgressBar.Dispatcher.CheckAccess() = False Then
+                            SendProgressBar.Dispatcher.BeginInvoke(Sub() SendProgressBar.Value += 10)
+                        Else
+                            SendProgressBar.Value += 10
+                        End If
+
+                    End If
+                Loop While BytesRead > 0
+
+            End Using
+
+            'Close the connection
+            SenderSocket.Close()
+
+        End Using
+
+    End Sub
+
+    Private Sub ConfigSenderWorker_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles ConfigSenderWorker.RunWorkerCompleted
+        If Not e.Cancelled Then
+            'A config file can now be sent
+            SendConfigButton.IsEnabled = False
+            MsgBox("Config successfully sent!" + vbCrLf + "Please report on GitHub if the config file changes the behaviour.", MsgBoxStyle.Information, "Success")
+        End If
+    End Sub
 
 End Class
