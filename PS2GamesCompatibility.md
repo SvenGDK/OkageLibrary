@@ -1,4 +1,4 @@
-## Tested PS2 games with the "Network Game Loader v0.1.4"
+## Tested PS2 games with the "Network Game Loader v0.1.4" without config file
 | Game Title | Game ID | Works ? | Comments |
 | ------------- | ------------- | ------------- | ------------- |
 Black | <img src='https://user-images.githubusercontent.com/84620/224665630-c8172062-4f02-4e40-b1c2-d07c7142cd56.png' width='21' height='15'> SLES-53886 | :red_square: No | Crash after transfer
