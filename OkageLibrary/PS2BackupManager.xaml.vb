@@ -13,6 +13,7 @@ Public Class PS2BackupManager
 
     Dim AddToList As Boolean = False
     Dim SelectedISO As String
+    Dim AddedGameID As String
     Dim TotalBytes As Long
 
     Public ConsoleIP As String
@@ -118,11 +119,6 @@ Public Class PS2BackupManager
             ReleaseDateTextBlock.Text = GameReleaseDate
             DeveloperTextBlock.Text = GameDeveloper
 
-            'Checks before adding to the GamesListView
-            If GameTitle = "" Then GameTitle = "Unknown"
-            If GameID = "" Then GameID = "Unknown"
-            If GameRegion = "" Then GameRegion = "Unknown"
-
             If AddToList = True Then
                 'Add to the GamesListView and games.list
                 AddToGameList(GameTitle, GameID, GameRegion)
@@ -144,8 +140,9 @@ Public Class PS2BackupManager
             SelectedISO = OFD.FileName
 
             If GameID = "ID not found" Then
+
                 'Add to the GamesListView
-                Dim GameItem As New GameListViewItem() With {.GameTitle = "Not found", .GameID = GameID, .GameRegion = "Unknown", .GameFilePath = OFD.FileName}
+                Dim GameItem As New GameListViewItem() With {.GameTitle = "Unknown", .GameID = "Unknown", .GameRegion = "Unknown", .GameFilePath = OFD.FileName}
                 GamesListView.Items.Add(GameItem)
 
                 If Not File.Exists(My.Computer.FileSystem.CurrentDirectory + "\games.list") Then
@@ -157,14 +154,19 @@ Public Class PS2BackupManager
                     GamesFileWriter.WriteLine("Unknown;Unknown;Unknown;" + OFD.FileName)
                     GamesFileWriter.Close()
                 End Using
+
             Else
+
                 GameID = GameID.Replace(".", "").Replace("_", "-").Trim()
+                AddedGameID = GameID
                 AddToList = True
+
                 Try
                     PSXDatacenterBrowser.Navigate("https://psxdatacenter.com/psx2/games2/" + GameID + ".html")
                 Catch ex As Exception
                     MsgBox("Could not load game informations from PSXDatacenter.", MsgBoxStyle.Exclamation, "No information found for this Game ID")
                 End Try
+
             End If
 
         End If
@@ -207,7 +209,31 @@ Public Class PS2BackupManager
 
     End Function
 
+    Public Function GetReadableSizeString(Value As Long) As String
+        Dim DoubleBytes As Double
+        DoubleBytes = CDbl(Value / 1048576)
+        Return FormatNumber(DoubleBytes, 2) & " MB"
+    End Function
+
     Private Sub AddToGameList(Title As String, ID As String, Region As String)
+
+        'Check for empty values and correct them
+        If Not String.IsNullOrWhiteSpace(Title) AndAlso Title.Contains("Retype the address.") Then Title = "Unknown"
+        If String.IsNullOrWhiteSpace(ID) Then ID = AddedGameID
+
+        If String.IsNullOrWhiteSpace(Region) Then
+
+            Dim RegionCode As String = AddedGameID.Substring(0, 4)
+            Select Case RegionCode
+                Case "SLES", "SCES"
+                    Region = "Europe"
+                Case "SLUS", "SCUS"
+                    Region = "USA"
+                Case "SLPS", "SCAJ", "SCKA", "TCPS", "KOEI", "ALCH", "FVGK"
+                    Region = "Asia"
+            End Select
+
+        End If
 
         'Add to the GamesListView
         Dim GameItem As New GameListViewItem() With {.GameTitle = Title, .GameID = ID, .GameRegion = Region, .GameFilePath = SelectedISO}
@@ -226,13 +252,14 @@ Public Class PS2BackupManager
         If GamesListView.SelectedItem IsNot Nothing Then
             Dim SelectedGame As GameListViewItem = CType(GamesListView.SelectedItem, GameListViewItem)
 
-            If MsgBox("Do you really want to remove " + SelectedGame.GameTitle + " from the games library ?", MsgBoxStyle.YesNo, "Please confirm") = MsgBoxResult.Yes Then
+            If MsgBox("Do you really want to remove:" + vbCrLf + SelectedGame.GameTitle + vbCrLf + SelectedGame.GameID + vbCrLf + "from the games library ?", MsgBoxStyle.YesNo, "Please confirm") = MsgBoxResult.Yes Then
 
                 'Get the line of the selected game
                 Dim LineOfGame As Integer
-                Dim GameslistLines = File.ReadAllLines(My.Computer.FileSystem.CurrentDirectory + "\homebrew.list")
+                Dim GameslistLines = File.ReadAllLines(My.Computer.FileSystem.CurrentDirectory + "\games.list")
+
                 For i = 0 To GameslistLines.Length - 1
-                    If GameslistLines(i).StartsWith(SelectedGame.GameTitle) Then
+                    If GameslistLines(i).Contains(SelectedGame.GameID) Then
                         LineOfGame = i
                     End If
                 Next
@@ -244,47 +271,56 @@ Public Class PS2BackupManager
                 'Write the new games.list
                 File.WriteAllLines(My.Computer.FileSystem.CurrentDirectory + "\games.list", GamesLinesAsList)
 
+                'Remove it from the ListView
                 GamesListView.Items.Remove(GamesListView.SelectedItem)
             End If
-
+        Else
+            MsgBox("No game selected." + vbCrLf + "Please select a game first.", MsgBoxStyle.Exclamation, "No game selected")
         End If
 
     End Sub
 
     Private Sub SendGameButton_Click(sender As Object, e As RoutedEventArgs) Handles SendGameButton.Click
 
-        If GamesListView.SelectedItem IsNot Nothing And Not String.IsNullOrWhiteSpace(ConsoleIP) Then
+        'Check if a game is selected
+        If GamesListView.SelectedItem IsNot Nothing Then
+            'Check if an IP address was entered before
+            If Not String.IsNullOrWhiteSpace(ConsoleIP) Then
 
-            Dim SelectedGame As GameListViewItem = CType(GamesListView.SelectedItem, GameListViewItem)
+                Dim SelectedGame As GameListViewItem = CType(GamesListView.SelectedItem, GameListViewItem)
 
-            If MsgBox("Send " + SelectedGame.GameFilePath + " to the console ?", MsgBoxStyle.YesNo, "Confirm") = MsgBoxResult.Yes Then
-                'Show progress bar
-                GameDescriptionTextBlock.Height = 230
-                SendStatusTextBlock.Visibility = Visibility.Visible
-                SendProgressBar.Visibility = Visibility.Visible
-                SendGameButton.IsEnabled = False
+                If MsgBox("Send " + SelectedGame.GameFilePath + " to the console ?", MsgBoxStyle.YesNo, "Confirm") = MsgBoxResult.Yes Then
+                    'Show progress bar
+                    GameDescriptionTextBlock.Height = 230
+                    SendStatusTextBlock.Visibility = Visibility.Visible
+                    SendProgressBar.Visibility = Visibility.Visible
+                    SendGameButton.IsEnabled = False
 
-                Dim DeviceIP As IPAddress = IPAddress.Parse(ConsoleIP)
-                Dim GameFileInfo As New FileInfo(SelectedGame.GameFilePath)
+                    Dim DeviceIP As IPAddress = IPAddress.Parse(ConsoleIP)
+                    Dim GameFileInfo As New FileInfo(SelectedGame.GameFilePath)
 
-                'Set the progress bar maximum and TotalBytes to send
-                SendProgressBar.Value = 0
-                SendProgressBar.Maximum = CDbl(GameFileInfo.Length)
-                TotalBytes = GameFileInfo.Length
+                    'Set the progress bar maximum and TotalBytes to send
+                    SendProgressBar.Value = 0
+                    SendProgressBar.Maximum = CDbl(GameFileInfo.Length)
+                    TotalBytes = GameFileInfo.Length
 
-                'Start sending
-                Dim WorkArgs As New MainWindow.WorkerArgs() With {.DeviceIP = DeviceIP, .FileToSend = SelectedGame.GameFilePath}
-                If UseModELF = True Then WorkArgs.ChunkSize = 63488 Else WorkArgs.ChunkSize = 4096
-                SenderWorker.RunWorkerAsync(WorkArgs)
+                    'Start sending
+                    Dim WorkArgs As New MainWindow.WorkerArgs() With {.DeviceIP = DeviceIP, .FileToSend = SelectedGame.GameFilePath}
+                    If UseModELF = True Then WorkArgs.ChunkSize = 63488 Else WorkArgs.ChunkSize = 4096
+                    SenderWorker.RunWorkerAsync(WorkArgs)
+                End If
+            Else
+                MsgBox("No IP address was entered." + vbCrLf + "Please enter an IP address on the main window and re-open the backup manager.", MsgBoxStyle.Exclamation, "No IP address")
             End If
-
+        Else
+            MsgBox("No game selected." + vbCrLf + "Please select a game first.", MsgBoxStyle.Exclamation, "No game selected")
         End If
 
     End Sub
 
     Private Sub GamesListView_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles GamesListView.SelectionChanged
-
         If GamesListView.SelectedItem IsNot Nothing Then
+            'Update the view and show details about the selected game (if found)
             Dim GameID As String = CType(GamesListView.SelectedItem, GameListViewItem).GameID
             Try
                 PSXDatacenterBrowser.Navigate("https://psxdatacenter.com/psx2/games2/" + GameID + ".html")
@@ -292,7 +328,6 @@ Public Class PS2BackupManager
                 MsgBox("Could not load game informations from PSXDatacenter.", MsgBoxStyle.Exclamation, "No information found for this Game ID")
             End Try
         End If
-
     End Sub
 
     Private Sub SenderWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles SenderWorker.DoWork
@@ -311,7 +346,6 @@ Public Class PS2BackupManager
 
             'Connect to the console
             SenderSocket.Connect(CurrentWorkerArgs.DeviceIP, 9045)
-
             'Send the magic
             SenderSocket.Send(MagicBytes)
             'Send the file size
@@ -388,12 +422,6 @@ Public Class PS2BackupManager
 
     End Sub
 
-    Public Function GetReadableSizeString(Value As Long) As String
-        Dim DoubleBytes As Double
-        DoubleBytes = CDbl(Value / 1048576)
-        Return FormatNumber(DoubleBytes, 2) & " MB"
-    End Function
-
     Private Sub SendConfigButton_Click(sender As Object, e As RoutedEventArgs) Handles SendConfigButton.Click
 
         'Open choose config dialog
@@ -406,11 +434,10 @@ Public Class PS2BackupManager
             SendStatusTextBlock.Visibility = Visibility.Visible
             SendProgressBar.Visibility = Visibility.Visible
             SendGameButton.IsEnabled = False
+            SendConfigButton.IsEnabled = False
 
             Dim ConfigFileInfo As New FileInfo(OFD.FileName)
             Dim FilePath As String = Path.GetFullPath(OFD.FileName)
-
-            MsgBox(FilePath)
 
             'Set the progress bar maximum and TotalBytes to send
             SendProgressBar.Value = 0
@@ -481,9 +508,30 @@ Public Class PS2BackupManager
     End Sub
 
     Private Sub ConfigSenderWorker_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles ConfigSenderWorker.RunWorkerCompleted
+
+        'Hide progress
+        If GameDescriptionTextBlock.Dispatcher.CheckAccess() = False Then
+            GameDescriptionTextBlock.Dispatcher.BeginInvoke(Sub() GameDescriptionTextBlock.Height = 310)
+        Else
+            GameDescriptionTextBlock.Height = 310
+        End If
+        If SendStatusTextBlock.Dispatcher.CheckAccess() = False Then
+            SendStatusTextBlock.Dispatcher.BeginInvoke(Sub() SendStatusTextBlock.Visibility = Visibility.Hidden)
+        Else
+            SendStatusTextBlock.Visibility = Visibility.Hidden
+        End If
+        If SendProgressBar.Dispatcher.CheckAccess() = False Then
+            SendProgressBar.Dispatcher.BeginInvoke(Sub() SendProgressBar.Visibility = Visibility.Hidden)
+        Else
+            SendProgressBar.Visibility = Visibility.Hidden
+        End If
+        If SendGameButton.Dispatcher.CheckAccess() = False Then
+            SendGameButton.Dispatcher.BeginInvoke(Sub() SendGameButton.IsEnabled = True)
+        Else
+            SendGameButton.IsEnabled = True
+        End If
+
         If Not e.Cancelled Then
-            'A config file can now be sent
-            SendConfigButton.IsEnabled = False
             MsgBox("Config successfully sent!" + vbCrLf + "Please report on GitHub if the config file changes the behaviour.", MsgBoxStyle.Information, "Success")
         End If
     End Sub

@@ -120,6 +120,7 @@ Class MainWindow
                 'Get the line of the selected homebrew
                 Dim LineOfHomebrew As Integer
                 Dim HomebrewlistLines = File.ReadAllLines(My.Computer.FileSystem.CurrentDirectory + "\homebrew.list")
+
                 For i = 0 To HomebrewlistLines.Length - 1
                     If HomebrewlistLines(i).StartsWith(SelectedHomebrew.FileName) Then
                         LineOfHomebrew = i
@@ -217,32 +218,37 @@ Class MainWindow
     End Sub
 
     Private Sub SendELFButton_Click(sender As Object, e As RoutedEventArgs) Handles SendELFButton.Click
+        'Check if a game is selected
+        If HomebrewListView.SelectedItem IsNot Nothing Then
+            'Check if an IP address was entered
+            If Not String.IsNullOrWhiteSpace(IPTextBox.Text) Then
+                Dim DeviceIP As IPAddress
 
-        If HomebrewListView.SelectedItem IsNot Nothing And Not String.IsNullOrWhiteSpace(IPTextBox.Text) Then
+                Try
+                    DeviceIP = IPAddress.Parse(IPTextBox.Text)
+                Catch ex As FormatException
+                    MsgBox("Could not send selected ELF. Please check your IP.", MsgBoxStyle.Exclamation, "Error sending file")
+                    Exit Sub
+                End Try
 
-            Dim DeviceIP As IPAddress
+                Dim SelectedELF As HomebrewListViewItem = CType(HomebrewListView.SelectedItem, HomebrewListViewItem)
 
-            Try
-                DeviceIP = IPAddress.Parse(IPTextBox.Text)
-            Catch ex As FormatException
-                MsgBox("Could not send selected ELF. Please check your IP.", MsgBoxStyle.Exclamation, "Error sending file")
-                Exit Sub
-            End Try
+                'Check if the modified network game loader has been sent
+                If SelectedELF.FileName.Contains("mod network game loader") Then UseMod = True Else UseMod = False
 
-            Dim SelectedELF As HomebrewListViewItem = CType(HomebrewListView.SelectedItem, HomebrewListViewItem)
+                'Set the progress bar maximum and TotalBytes to send
+                SendProgressBar.Value = 0
+                SendProgressBar.Maximum = CDbl(New FileInfo(SelectedELF.FilePath).Length)
+                TotalBytes = CInt(New FileInfo(SelectedELF.FilePath).Length)
 
-            'Check if the modified network game loader has been sent
-            If SelectedELF.FileName.Contains("mod network game loader") Then UseMod = True Else UseMod = False
-
-            'Set the progress bar maximum and TotalBytes to send
-            SendProgressBar.Value = 0
-            SendProgressBar.Maximum = CDbl(New FileInfo(SelectedELF.FilePath).Length)
-            TotalBytes = CInt(New FileInfo(SelectedELF.FilePath).Length)
-
-            'Start sending
-            SenderWorker.RunWorkerAsync(New WorkerArgs() With {.DeviceIP = DeviceIP, .FileToSend = SelectedELF.FilePath})
+                'Start sending
+                SenderWorker.RunWorkerAsync(New WorkerArgs() With {.DeviceIP = DeviceIP, .FileToSend = SelectedELF.FilePath})
+            Else
+                MsgBox("No IP address was entered." + vbCrLf + "Please enter an IP address.", MsgBoxStyle.Exclamation, "No IP address")
+            End If
+        Else
+            MsgBox("No ELF selected." + vbCrLf + "Please select an ELF first.", MsgBoxStyle.Exclamation, "No ELF selected")
         End If
-
     End Sub
 
     Private Sub SenderWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles SenderWorker.DoWork
@@ -305,23 +311,21 @@ Class MainWindow
 
     Private Sub SenderWorker_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles SenderWorker.RunWorkerCompleted
 
+        'Reset the progress status
+        If SendStatusTextBlock.Dispatcher.CheckAccess() = False Then
+            SendStatusTextBlock.Dispatcher.BeginInvoke(Sub() SendStatusTextBlock.Text = "Status :")
+        Else
+            SendStatusTextBlock.Text = "Status :"
+        End If
+
+        If SendProgressBar.Dispatcher.CheckAccess() = False Then
+            SendProgressBar.Dispatcher.BeginInvoke(Sub() SendProgressBar.Value = 0)
+        Else
+            SendProgressBar.Value = 0
+        End If
+
         If Not e.Cancelled Then
-            If MsgBox("ELF successfully sent!" + vbCrLf + "Clear the progress status ?", MsgBoxStyle.YesNo, "Success") = MsgBoxResult.Yes Then
-
-                'Reset the progress status
-                If SendStatusTextBlock.Dispatcher.CheckAccess() = False Then
-                    SendStatusTextBlock.Dispatcher.BeginInvoke(Sub() SendStatusTextBlock.Text = "Status :")
-                Else
-                    SendStatusTextBlock.Text = "Status :"
-                End If
-
-                If SendProgressBar.Dispatcher.CheckAccess() = False Then
-                    SendProgressBar.Dispatcher.BeginInvoke(Sub() SendProgressBar.Value = 0)
-                Else
-                    SendProgressBar.Value = 0
-                End If
-
-            End If
+            MsgBox("ELF successfully sent!" + vbCrLf + "Clear the progress status ?", MsgBoxStyle.YesNo, "Success")
         End If
 
     End Sub
