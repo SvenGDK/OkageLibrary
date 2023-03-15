@@ -30,6 +30,9 @@
 - Open the PS2 Backup Manager and add a game if not done yet
 - Select the game on the list and select "Send selected game to console"
 - Wait until the game has been transferred to the console
+- OPTIONAL [requires modified ELF]:
+  - Select Yes/No on your console to send a config file
+  - If you have choosen "Yes" -> Click on "Send config" and select your .conf file
 - Enjoy (if not crashed... :P)
 
 ## How-to repack an emulator ISO file
