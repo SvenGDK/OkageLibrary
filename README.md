@@ -2,12 +2,13 @@
 | ------------- | ------------- |
 | <img width="128" alt="Logo" src="https://user-images.githubusercontent.com/84620/224557684-ad2cf053-123f-4244-9df9-3bed55c5214c.png"> | Windows tool to manage & send compatible mast1c0re ELFs & ISOs. </br> Includes a RetroArch PS2 ISO Repacker and a Format to exFAT MBR Tool. |
 
-## Features of v1.2
+## Features of v1.3
 - Store all your ELF files and PS2 ISO games at one place
   - To use with mast1c0re compatible ELF files
 - Send ELFs to the mast1c0re Network ELF Loader
 - Send Games to the mast1c0re Network Game Loader
   - Compatible with the [modified network game loader](https://github.com/SvenGDK/mast1c0re-mod-network-game-loader) to transfer your games faster
+  - Supports sending config files "GAME-ID_cli.conf" after transferring a game (requires modified loader)
 - PS2 Backup Manager
   - Shows game details and art from [PSXDatacenter](https://psxdatacenter.com) if the game ID is supported
 - Emulator ISO Repacker
