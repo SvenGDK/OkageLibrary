@@ -7,8 +7,8 @@
   - To use with mast1c0re compatible ELF files
 - Send ELFs to the mast1c0re Network ELF Loader
 - Send Games to the mast1c0re Network Game Loader
-  - Compatible with the [modified network game loader](https://github.com/SvenGDK/mast1c0re-mod-network-game-loader) to transfer your games faster
-  - Supports sending config files "GAME-ID_cli.conf" after transferring a game (requires modified loader)
+  - Transfer your games faster (requires latest Network Game Loader)
+  - Supports sending config files "GAME-ID_cli.conf" after transferring a game (requires latest Network Game Loader)
 - PS2 Backup Manager
   - Shows game details and art from [PSXDatacenter](https://psxdatacenter.com) if the game ID is supported
 - Emulator ISO Repacker
@@ -30,7 +30,7 @@
 - Open the PS2 Backup Manager and add a game if not done yet
 - Select the game on the list and select "Send selected game to console"
 - Wait until the game has been transferred to the console
-- OPTIONAL [requires modified ELF]:
+- OPTIONAL (requires latest Network Game Loader):
   - Select Yes/No on your console to send a config file
   - If you have choosen "Yes" -> Click on "Send config" and select your .conf file
 - Enjoy (if not crashed... :P)
